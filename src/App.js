@@ -25,7 +25,7 @@ function App() {
           {/* Card */}
           <div className="w-[414px] h-[832px] flex flex-col items-center rounded-[42px] z-50 bg-white/20 backdrop-blur bg-opacity-20 shadow-lg">
           <div className='absolute w-[128px] h-[128px] rounded-full bg-gradient-to-r from-[#ff9429] via-[#feac31] to-[#ff9429] left-32 z-0'></div>
-            {/* Card Header */}
+            {/* Card Header f */}
             <div className="w-4/5 flex items-center flex-col mt-12">
               <div className="flex w-full justify-between">
                 <div>
