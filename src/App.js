@@ -33,19 +33,23 @@ function App() {
   const [city, setCity] = useState('')
 
   const apiKey = "7a84f98ac9416e88fbb1c66f9eda70e3";
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
 
-  console.log("api", apiKey)
-  console.log("url", url)
-
-  const cityAdd = (city) => {
-    setCity(city);
-    setCountrySearch("");
-  };
 
   const handleSearch = (event) => {
     setCountrySearch(event.target.value)
   };
+
+  const cityAdd = (city) => {
+    if (city.includes(" ")) {
+      city = city.replace(/ /g, "%20");
+    }
+    setCity(city);
+    setCountrySearch("");
+
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
+    console.log("url", url)
+  };
+
 
   const fetchData = async () => {
     setIsLoading(true)
@@ -53,7 +57,6 @@ function App() {
       .then((response) => response.json())
       .then((result) => {
         const countriesAndCities = cityfilter(result.data);
-        console.log(countriesAndCities)
         setCities(countriesAndCities)
         setFilteredData(result.data)
         setIsLoading(false)
@@ -110,7 +113,7 @@ function App() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none"><g opacity="0.2"><path d="M31.51 28.51H29.93L29.37 27.97C31.33 25.69 32.51 22.73 32.51 19.51C32.51 12.33 26.69 6.51001 19.51 6.51001C12.33 6.51001 6.51001 12.33 6.51001 19.51C6.51001 26.69 12.33 32.51 19.51 32.51C22.73 32.51 25.69 31.33 27.97 29.37L28.51 29.93V31.51L38.51 41.49L41.49 38.51L31.51 28.51ZM19.51 28.51C14.53 28.51 10.51 24.49 10.51 19.51C10.51 14.53 14.53 10.51 19.51 10.51C24.49 10.51 28.51 14.53 28.51 19.51C28.51 24.49 24.49 28.51 19.51 28.51Z" fill="black" /></g>
                 </svg>
               </div>
-              <input type="search" id="search" value="read" name="search" placeholder={isLoading ? "Loading" : "Search"} onChange={handleSearch} className="h-[44px] w-full text-3xl font-bold outline-none"></input>
+              <input type="search" id="search" name="search" placeholder={isLoading ? "Loading" : "Search"} onChange={handleSearch} className="h-[44px] w-full text-3xl font-bold outline-none"></input>
             </div>
             {countrySearch &&
               <div className='mt-[10px] pt-4 pb-4 bg-[#ffffff33] backdrop-blur-2xl shadow-lg rounded-[24px]'>
@@ -158,7 +161,6 @@ function App() {
 
         {/* Right Container */}
         <div className="w-full h-screen bg-[#0F141E]">
-          dsa
         </div>
       </div>
     </div>
