@@ -1,6 +1,9 @@
 import './App.css';
+import React from 'react';
 import logo from './imgs/logo.png';
 import moment from 'moment';
+import UseAnimations from "react-useanimations";
+import loading2 from 'react-useanimations/lib/loading2';
 
 // Forecast img imports
 import sun from './imgs/sun.webp'
@@ -19,6 +22,14 @@ import nRain from './imgs/nRain.png'
 import nSnow from './imgs/nSnow.png'
 import nLightning from './imgs/nLightning.png'
 
+// Small Icons
+import clear_icon from './imgs/Icons/clear.png'
+import cloud_icon from './imgs/Icons/cloud.png'
+import drizzle_icon from './imgs/Icons/drizzle.png'
+import rain_icon from './imgs/Icons/rain.png'
+import snow_icon from './imgs/Icons/snow.png'
+import wind_icon from './imgs/Icons/wind.png'
+
 
 import { cityfilter } from './utils/CityFilter';
 import { useEffect, useState } from "react";
@@ -31,6 +42,7 @@ function App() {
   const [cities, setCities] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCardLoading, setCardIsLoading] = useState(true);
   const [city, setCity] = useState('Ulaanbaatar');
   const [weather, setWeather] = useState({});
   const [weatherIcon, setWeatherIcon] = useState();
@@ -42,13 +54,56 @@ function App() {
     setCountrySearch(event.target.value)
   };
 
+  const allIcons = {
+    "01d": clear_icon,
+    "01n": clear_icon,
+    "02d": cloud_icon,
+    "02n": cloud_icon,
+    "03d": cloud_icon,
+    "03n": cloud_icon,
+    "04d": drizzle_icon,
+    "04n": drizzle_icon,
+    "09d": rain_icon,
+    "09n": rain_icon,
+    "10d": rain_icon,
+    "10n": rain_icon,
+    "13d": snow_icon,
+    "13n": snow_icon,
+  }
+
+  const dayFormatter = (dateString) => {
+    const date = new Date(dateString);
+    const options = { weekday: 'short' };
+    return date.toLocaleDateString('en-US', options);
+  };
+
   const fetchWeather = async (city) => {
     setErrorMessage('')
-    await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&cnt=5&appid=${apiKey}`)
+    await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&cnt=40&appid=${apiKey}`)
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
-        setWeather(result);
+        setWeather({
+          location: result.city.name,
+          temp: Math.floor(result.list[0].main.temp_min),
+          desc: result.list[0].weather[0].description,
+          icon: {
+            day2: allIcons[result.list[5].weather[0].icon],
+            day3: allIcons[result.list[15].weather[0].icon],
+            day4: allIcons[result.list[23].weather[0].icon],
+            day5: allIcons[result.list[31].weather[0].icon]
+          },
+          date: {
+            day2: dayFormatter(result.list[5].dt_txt),
+            day3: dayFormatter(result.list[15].dt_txt),
+            day4: dayFormatter(result.list[23].dt_txt),
+            day5: dayFormatter(result.list[31].dt_txt),
+          },
+          tempDay2: Math.floor(result.list[5].main.temp),
+          tempDay3: Math.floor(result.list[15].main.temp),
+          tempDay4: Math.floor(result.list[23].main.temp),
+          tempDay5: Math.floor(result.list[31].main.temp),
+        });
         iconHandler(result);
       })
       .catch((error) => {
@@ -172,7 +227,7 @@ function App() {
       {/* Main Container */}
       <div className="weather-container flex content-between">
         {/* Search Bar */}
-        <div className='absolute z-50 w-screen h-screen flex justify-center mt-[40px]'>
+        <div className='absolute w-screen z-50  flex justify-center mt-[40px]'>
           <div>
             <div className="w-[567px] h-auto bg-white flex row gap-4 justify-center items-center p-4 rounded-[48px]">
               <div className="w-12 h-12">
@@ -197,36 +252,55 @@ function App() {
         {/* SB END */}
         {/* Left Side Container */}
         <div className="w-full h-screen flex justify-center items-center bg-[#F3F4F6]">
-          <div className="flex relative justify-center items-center">
-            {/* Card */}
-            <div className="w-[414px] h-[832px] flex flex-col items-center rounded-[42px] z-10 bg-white/20 backdrop-blur-[10px] bg-opacity-20 shadow-lg">
-              {/* Card Header f */}
-              <div className="w-4/5 flex items-center flex-col mt-12">
-                <div className="flex w-full justify-between">
-                  <div>
-                    <p className="text-lg text-[#9CA3AF]">{moment().format('MMMM Do YYYY')}</p>
-                    <h1 className="text-5xl text-[#111827] font-extrabold">{weather?.city?.name || 'Undefined'}</h1>
+          {isLoading && (<UseAnimations animation={loading2} size={40} fillColor='#0F141E' strokeColor='#0F141E' />)}
+          {!isLoading && (
+            <div className="flex relative justify-center items-center">
+              {/* Card */}
+              <div className="w-[414px] h-[832px] flex flex-col items-center rounded-[42px] z-10 bg-white/20 backdrop-blur-[10px] bg-opacity-20 shadow-lg">
+                {/* Card Header f */}
+                <div className="w-4/5 flex items-center flex-col mt-12">
+                  <div className="flex w-full justify-between">
+                    <div>
+                      <p className="text-lg text-[#9CA3AF]">{moment().format('MMMM Do YYYY')}</p>
+                      <h1 className="text-5xl text-[#111827] font-extrabold">{weather.location || 'Undefined'}</h1>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-gray-600"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
                   </div>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-gray-600"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  <img src={weatherIcon || sun} alt="" className="relative w-[274px] h-[274px] mt-10 z-10" />
+                  <img src={sunShadow} alt="sun" className="absolute mt-32 w-[274px] h-[274px] z-0" />
                 </div>
-                <img src={weatherIcon || sun} alt="" className="relative w-[274px] h-[274px] mt-16 z-10" />
-                <img src={sunShadow} alt="sun" className="absolute mt-36 w-[274px] h-[274px] z-0" />
+                {/* Car Footer */}
+                <div className='flex text-start flex-col -mt-[20px] w-4/5'>
+                  <h1 className='text-[144px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.temp || '0'}°</h1>
+                  <p className='text-2xl font-extrabold text-[#FF8E27] -mt-6'>
+                    {weather.desc || 'Error'}</p>
+                </div>
+                <div className="flex justify-between gap-2 w-4/5 mt-6 cursor-pointer">
+                  <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#F0F0F0]'>
+                    <img src={weather?.icon?.day2} alt="weather" className='w-[50px]' />
+                    <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day2}</p>
+                    <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.tempDay2 || '0'}°</div>
+                  </div>
+                  <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#F0F0F0]'>
+                    <img src={weather?.icon?.day3} alt="weather" className='w-[50px]' />
+                    <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day3}</p>
+                    <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.tempDay3 || '0'}°</div>
+                  </div>
+                  <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#F0F0F0]'>
+                    <img src={weather?.icon?.day4} alt="weather" className='w-[50px]' />
+                    <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day4}</p>
+                    <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.tempDay4 || '0'}°</div>
+                  </div>
+                  <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#F0F0F0]'>
+                    <img src={weather?.icon?.day5} alt="weather" className='w-[50px]' />
+                    <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day5}</p>
+                    <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.tempDay5 || '0'}°</div>
+                  </div>
+                </div>
               </div>
-              {/* Car Footer */}
-              <div className='flex text-start flex-col w-4/5'>
-                <h1 className='text-[144px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[0]?.main?.temp_min) || '0'}°</h1>
-                <p className='text-2xl font-extrabold text-[#FF8E27] -mt-6'>
-                  {weather?.list?.[0]?.weather?.[0]?.description || 'Error'}</p>
-              </div>
-              <div className='flex justify-center gap-[60px] flex-row w-4/5 m-12 cursor-pointer'>
-                <div className='text-[20px] font-bold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[1]?.main?.temp_min) || '0'}°</div>
-                <div className='text-[20px] font-bold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[2]?.main?.temp_min) || '0'}°</div>
-                <div className='text-[20px] font-bold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[3]?.main?.temp_min) || '0'}°</div>
-                <div className='text-[20px] font-bold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[4]?.main?.temp_min) || '0'}°</div>
-              </div>
+              <div className='absolute w-[160px] h-[160px] rounded-full bg-gradient-to-r from-[#ff9429] via-[#feac31] to-[#ff9429] -ml-[400px] -mt-[60px] top-0 z-0'></div>
             </div>
-            <div className='absolute w-[160px] h-[160px] rounded-full bg-gradient-to-r from-[#ff9429] via-[#feac31] to-[#ff9429] -ml-[400px] -mt-[60px] top-0 z-0'></div>
-          </div>
+          )}
         </div>
 
         {/* Right Container */}
