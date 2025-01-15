@@ -29,15 +29,29 @@ function App() {
   const [countrySearch, setCountrySearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [cities, setCities] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false);
-  const [city, setCity] = useState('')
+  const [city, setCity] = useState('Ulaanbaatar')
+  const [weather, setWeather] = useState({})
 
   const apiKey = "7a84f98ac9416e88fbb1c66f9eda70e3";
-
 
   const handleSearch = (event) => {
     setCountrySearch(event.target.value)
   };
+
+  const fetchWeather = async (city) => {
+    setErrorMessage('')
+    await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+      .then((response) => response.json())
+      .then((result) => {
+        setWeather(result)
+      })
+      .catch((error) => {
+        console.log(error)
+        setErrorMessage('There is an error while fetching weather data')
+      })
+  }
 
   const cityAdd = (city) => {
     if (city.includes(" ")) {
@@ -45,17 +59,20 @@ function App() {
     }
     setCity(city);
     setCountrySearch("");
-
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
-    console.log("url", url)
   };
 
+  useEffect(() => {
+    if (city.length > 0) {
+      fetchWeather(city)
+    }
+  }, [city])
 
   const fetchData = async () => {
     setIsLoading(true)
     await fetch("https://countriesnow.space/api/v0.1/countries")
       .then((response) => response.json())
       .then((result) => {
+        setErrorMessage('')
         const countriesAndCities = cityfilter(result.data);
         setCities(countriesAndCities)
         setFilteredData(result.data)
@@ -64,6 +81,7 @@ function App() {
       .catch((error) => {
         console.log(error)
         setIsLoading(false)
+        setErrorMessage('There is an error while fetching countries data')
       })
   }
 
@@ -84,9 +102,7 @@ function App() {
     dataFilter()
   }, [countrySearch])
 
-  const Weather = (() => {
-  })
-
+  const shouldDisplayError = errorMessage.length > 0
 
   return (
     <div className="main-container relative overflow-hidden">
@@ -103,6 +119,7 @@ function App() {
         <div className="w-[1340px] h-[1340px] border border-[#FFFFFF] border-opacity-10 rounded-[50%] absolute"></div>
         <div className="w-[1740px] h-[1740px] border border-[#FFFFFF] border-opacity-10 rounded-[50%] absolute"></div>
       </div>
+      {shouldDisplayError && <div>{errorMessage}</div>}
       {/* Main Container */}
       <div className="weather-container flex content-between">
         {/* Search Bar */}
@@ -140,7 +157,7 @@ function App() {
                 <div className="flex w-full justify-between">
                   <div>
                     <p className="text-lg text-[#9CA3AF]">January 10, 2025</p>
-                    <h1 className="text-5xl text-[#111827] font-extrabold">Ulaanbaatar</h1>
+                    <h1 className="text-5xl text-[#111827] font-extrabold">{weather.name || 'Undefined'}</h1>
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-gray-600"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
                 </div>
@@ -149,8 +166,9 @@ function App() {
               </div>
               {/* Car Footer */}
               <div className='flex text-start flex-col w-4/5'>
-                <h1 className='text-[144px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>26°</h1>
-                <p className='text-2xl font-extrabold text-[#FF8E27] -mt-6'>Bright</p>
+                <h1 className='text-[144px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.main?.temp) || '0'}</h1>
+                <p className='text-2xl font-extrabold text-[#FF8E27] -mt-6'>
+                  {weather?.weather?.[0]?.description || 'Error'}</p>
               </div>
               <div className='flex justify-center gap-[60px] flex-row w-4/5 m-10 cursor-pointer'>
               </div>
@@ -163,7 +181,7 @@ function App() {
         <div className="w-full h-screen bg-[#0F141E]">
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 export default App;
