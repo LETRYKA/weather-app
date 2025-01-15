@@ -1,9 +1,10 @@
 import './App.css';
 import logo from './imgs/logo.png';
-import sunShadow from './imgs/shadow.png'
+import moment from 'moment';
 
 // Forecast img imports
 import sun from './imgs/sun.webp'
+import sunShadow from './imgs/shadow.png'
 import cloud from './imgs/Clouds.png'
 import wind from './imgs/Wind.png'
 import rain from './imgs/Rain.png'
@@ -20,7 +21,6 @@ import nLightning from './imgs/nLightning.png'
 
 
 import { cityfilter } from './utils/CityFilter';
-
 import { useEffect, useState } from "react";
 
 
@@ -29,12 +29,14 @@ function App() {
   const [countrySearch, setCountrySearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [cities, setCities] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [city, setCity] = useState('Ulaanbaatar')
-  const [weather, setWeather] = useState({})
+  const [city, setCity] = useState('Ulaanbaatar');
+  const [weather, setWeather] = useState({});
+  const [weatherIcon, setWeatherIcon] = useState();
+  const [weatherIconNight, setWeatherIconNight] = useState();
 
-  const apiKey = "7a84f98ac9416e88fbb1c66f9eda70e3";
+  const apiKey = process.env.REACT_APP_WEATHER_API_KEY;
 
   const handleSearch = (event) => {
     setCountrySearch(event.target.value)
@@ -42,15 +44,62 @@ function App() {
 
   const fetchWeather = async (city) => {
     setErrorMessage('')
-    await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+    await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&cnt=5&appid=${apiKey}`)
       .then((response) => response.json())
       .then((result) => {
-        setWeather(result)
+        console.log(result);
+        setWeather(result);
+        iconHandler(result);
       })
       .catch((error) => {
         console.log(error)
         setErrorMessage('There is an error while fetching weather data')
       })
+  }
+
+  const iconHandler = (result) => {
+    if (result && result.list && result.list[0] && result.list[0].weather && result.list[0].weather[0]) {
+      const weatherDescription = result.list[0].weather[0].description;
+
+      if (weatherDescription === "clear sky") {
+        setWeatherIcon(sun);
+        setWeatherIconNight(moon);
+      }
+      if (weatherDescription === "few clouds") {
+        setWeatherIcon(cloud);
+        setWeatherIconNight(nCloud);
+      }
+      if (weatherDescription === "scattered clouds") {
+        setWeatherIcon(cloud);
+        setWeatherIconNight(nCloud);
+      }
+      if (weatherDescription === "broken clouds") {
+        setWeatherIcon(cloud);
+        setWeatherIconNight(nCloud);
+      }
+      if (weatherDescription === "shower rain") {
+        setWeatherIcon(rain);
+        setWeatherIconNight();
+      }
+      if (weatherDescription === "rain") {
+        setWeatherIcon(rain);
+        setWeatherIconNight(nRain);
+      }
+      if (weatherDescription === "thunderstorm") {
+        setWeatherIcon(lightning);
+        setWeatherIconNight(nLightning);
+      }
+      if (weatherDescription === "snow") {
+        setWeatherIcon(snow);
+        setWeatherIconNight(nSnow);
+      }
+      if (weatherDescription === "mist") {
+        setWeatherIcon(wind);
+        setWeatherIconNight(nWind);
+      }
+    } else {
+      console.log('Error');
+    }
   }
 
   const cityAdd = (city) => {
@@ -136,10 +185,9 @@ function App() {
               <div className='mt-[10px] pt-4 pb-4 bg-[#ffffff33] backdrop-blur-2xl shadow-lg rounded-[24px]'>
                 {!isLoading && countrySearch.length > 0 &&
                   filteredData.map((country, index) => {
-                    console.log(country)
                     return <div className='w-full h-[50px] flex items-center self-stretch gap-[16px] cursor-pointer ml-[24px]'>
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-gray-500"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                      <p className='text-2xl font-bold' onClick={() => cityAdd(country.city)} key={index}>{country.city}, {country.country}</p>
+                      <p className='text-2xl font-bold transition-all hover:pl-[5px]' onClick={() => cityAdd(country.city)} key={index}>{country.city}, {country.country}</p>
                     </div>
                   })}
                 {cities < 0 && <div>This is isLoading ...</div>}
@@ -156,21 +204,25 @@ function App() {
               <div className="w-4/5 flex items-center flex-col mt-12">
                 <div className="flex w-full justify-between">
                   <div>
-                    <p className="text-lg text-[#9CA3AF]">January 10, 2025</p>
-                    <h1 className="text-5xl text-[#111827] font-extrabold">{weather.name || 'Undefined'}</h1>
+                    <p className="text-lg text-[#9CA3AF]">{moment().format('MMMM Do YYYY')}</p>
+                    <h1 className="text-5xl text-[#111827] font-extrabold">{weather?.city?.name || 'Undefined'}</h1>
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-gray-600"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
                 </div>
-                <img src={sun} alt="sun" className="relative w-[274px] h-[274px] mt-16 z-10" />
+                <img src={weatherIcon || sun} alt="" className="relative w-[274px] h-[274px] mt-16 z-10" />
                 <img src={sunShadow} alt="sun" className="absolute mt-36 w-[274px] h-[274px] z-0" />
               </div>
               {/* Car Footer */}
               <div className='flex text-start flex-col w-4/5'>
-                <h1 className='text-[144px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.main?.temp) || '0'}</h1>
+                <h1 className='text-[144px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[0]?.main?.temp_min) || '0'}°</h1>
                 <p className='text-2xl font-extrabold text-[#FF8E27] -mt-6'>
-                  {weather?.weather?.[0]?.description || 'Error'}</p>
+                  {weather?.list?.[0]?.weather?.[0]?.description || 'Error'}</p>
               </div>
-              <div className='flex justify-center gap-[60px] flex-row w-4/5 m-10 cursor-pointer'>
+              <div className='flex justify-center gap-[60px] flex-row w-4/5 m-12 cursor-pointer'>
+                <div className='text-[20px] font-bold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[1]?.main?.temp_min) || '0'}°</div>
+                <div className='text-[20px] font-bold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[2]?.main?.temp_min) || '0'}°</div>
+                <div className='text-[20px] font-bold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[3]?.main?.temp_min) || '0'}°</div>
+                <div className='text-[20px] font-bold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{Math.floor(weather?.list?.[4]?.main?.temp_min) || '0'}°</div>
               </div>
             </div>
             <div className='absolute w-[160px] h-[160px] rounded-full bg-gradient-to-r from-[#ff9429] via-[#feac31] to-[#ff9429] -ml-[400px] -mt-[60px] top-0 z-0'></div>
