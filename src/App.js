@@ -1,8 +1,8 @@
 import './App.css';
 import React from 'react';
 import logo from './imgs/logo.png';
-import Card from './components/Card';
-import CardNight from './components/CardNight'
+import Card from './components/Card';               // Component Card Day
+import CardNight from './components/CardNight'      // Component Card Night
 
 import UseAnimations from "react-useanimations";
 import activity from 'react-useanimations/lib/activity';
@@ -31,7 +31,6 @@ import cloud_icon from './imgs/Icons/cloud.png'
 import drizzle_icon from './imgs/Icons/drizzle.png'
 import rain_icon from './imgs/Icons/rain.png'
 import snow_icon from './imgs/Icons/snow.png'
-import wind_icon from './imgs/Icons/wind.png'
 
 
 import { cityfilter } from './utils/CityFilter';
@@ -40,18 +39,17 @@ import { useEffect, useState } from "react";
 
 function App() {
 
-  const [countrySearch, setCountrySearch] = useState("");
-  const [filteredData, setFilteredData] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCardLoading, setCardIsLoading] = useState(false);
-  const [city, setCity] = useState('Ulaanbaatar');
-  const [weather, setWeather] = useState({});
-  const [weatherIcon, setWeatherIcon] = useState();
-  const [weatherIconNight, setWeatherIconNight] = useState();
-  const [aqi, setAqi] = useState({});
-  const [aqiInfo, setAqiInfo] = useState("");
+  const [weatherIconNight, setWeatherIconNight] = useState(); // Weather Icon Night
+  const [countrySearch, setCountrySearch] = useState("");     // Search value
+  const [filteredData, setFilteredData] = useState([]);       // City Data Filter
+  const [errorMessage, setErrorMessage] = useState('');       // Error Message
+  const [isLoading, setIsLoading] = useState(false);          // Loading State
+  const [weatherIcon, setWeatherIcon] = useState();           // Weather Icon Day
+  const [city, setCity] = useState('Ulaanbaatar');            // City state default (Ulaanbaatar)
+  const [weather, setWeather] = useState({});                 // Weather Data
+  const [aqiInfo, setAqiInfo] = useState("");                 // Aqi additional info
+  const [cities, setCities] = useState([]);                   // City
+  const [aqi, setAqi] = useState({});                         // Aqi data
 
   const apiKey = '7a84f98ac9416e88fbb1c66f9eda70e3';
 
@@ -59,6 +57,7 @@ function App() {
     setCountrySearch(event.target.value)
   };
 
+  // API Icon data : Icons
   const allIcons = {
     "01d": clear_icon,
     "01n": clear_icon,
@@ -76,12 +75,14 @@ function App() {
     "13n": snow_icon,
   }
 
+  // Days to short name formatting function
   const dayFormatter = (dateString) => {
     const date = new Date(dateString);
     const options = { weekday: 'short' };
     return date.toLocaleDateString('en-US', options);
   };
 
+  // Fetching Country Data
   const fetchData = async () => {
     setIsLoading(true)
     await fetch("https://countriesnow.space/api/v0.1/countries")
@@ -89,9 +90,9 @@ function App() {
       .then((result) => {
         setErrorMessage('')
         const countriesAndCities = cityfilter(result.data);
+        console.log(countriesAndCities)
         setCities(countriesAndCities)
         setFilteredData(result.data)
-        setIsLoading(false)
       })
       .catch((error) => {
         console.log(error)
@@ -100,6 +101,7 @@ function App() {
       })
   }
 
+  // Filtering Country Data
   const dataFilter = () => {
     setFilteredData(
       cities.filter((data) =>
@@ -108,7 +110,9 @@ function App() {
     )
   }
 
+  // Fetching Weather Data
   const fetchWeather = async (city) => {
+    setIsLoading(true)
     setErrorMessage('')
     await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&cnt=40&appid=${apiKey}`)
       .then((response) => response.json())
@@ -137,13 +141,16 @@ function App() {
           tempDay5: Math.floor(result.list[31].main.temp),
         });
         iconHandler(result);
+        setIsLoading(false)
       })
       .catch((error) => {
+        setIsLoading(false)
         console.log(error)
         setErrorMessage('There is an error while fetching weather data')
       })
   }
 
+  // Show icons equal to weather status
   const iconHandler = (result) => {
     if (result && result.list && result.list[0] && result.list[0].weather && result.list[0].weather[0]) {
       const weatherDescription = result.list[0].weather[0].description;
@@ -197,8 +204,8 @@ function App() {
     }
   }
 
+  // Fetch Aqi status
   const fetchAqi = async (city) => {
-    setIsLoading(true)
     await fetch(`https://api.weatherapi.com/v1/forecast.json?key=2b4269596359410ea18150926251501&q=${city}&days=1&aqi=yes&alerts=no`)
       .then((response) => response.json())
       .then((result) => {
@@ -208,15 +215,14 @@ function App() {
         }
         setAqi(aqi)
         aqiHandler(aqi)
-        setIsLoading(false)
       })
       .catch((error) => {
-        setIsLoading(false)
         console.log(error)
         setErrorMessage('There is an error while fetching countries data')
       })
   }
 
+  // Aqi Handler
   const aqiHandler = (aqi) => {
     const airQuality = aqi.airQuality
     if (0 < airQuality && airQuality < 50) {
@@ -269,6 +275,7 @@ function App() {
     }
   };
 
+  // Add City
   const cityAdd = (city) => {
     if (city.includes(" ")) {
       city = city.replace(/ /g, "%20");
@@ -277,6 +284,7 @@ function App() {
     setCountrySearch("");
   };
 
+  // Use Effects
   useEffect(() => {
     if (city.length > 0) {
       fetchWeather(city)
@@ -355,11 +363,11 @@ function App() {
         {/* SB END */}
         {/* Left Side Container */}
         <div className="w-full h-screen flex justify-center items-center bg-[#F3F4F6]">
-          <Card isCardLoading={isCardLoading} weather={weather} weatherIcon={weatherIcon} sun={sun} sunShadow={sunShadow} iconHandler={iconHandler} />
+          <Card isLoading={isLoading} weather={weather} weatherIcon={weatherIcon} sun={sun} sunShadow={sunShadow} iconHandler={iconHandler} />
         </div>
         {/* Right Container */}
         <div className="w-full h-screen flex justify-center items-center bg-[#0F141E]">
-          <CardNight isCardLoading={isCardLoading} weather={weather} weatherIcon={weatherIcon} sun={moon} sunShadow={moonShadow} iconHandler={iconHandler} weatherIconNight={weatherIconNight} />
+          <CardNight isLoading={isLoading} weather={weather} weatherIcon={weatherIcon} sun={moon} sunShadow={moonShadow} iconHandler={iconHandler} weatherIconNight={weatherIconNight} />
         </div>
       </div>
     </div >

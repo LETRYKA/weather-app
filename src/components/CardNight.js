@@ -11,13 +11,13 @@ import snow_icon from '../imgs/Icons/snow.png'
 import wind_icon from '../imgs/Icons/wind.png'
 
 const CardNight = (props) => {
-    const { isCardLoading, weather, weatherIcon, sun, sunShadow, iconHandler, weatherIconNight } = props;
+    const { isLoading, weather, weatherIcon, sun, sunShadow, iconHandler, weatherIconNight } = props;
 
     return (
         <div>
-            {isCardLoading && (<UseAnimations animation={loading2} size={40} fillColor='#0F141E' strokeColor='#0F141E' />)}
+            {isLoading && (<UseAnimations animation={loading2} size={40} fillColor='white' strokeColor='white' />)}
             {
-                !isCardLoading && (
+                !isLoading && (
                     <div className="flex relative justify-center items-center">
                         {/* Card */}
                         <div className="w-[414px] h-auto flex flex-col items-center rounded-[42px] z-10 bg-[#111827BF] backdrop-blur-[10px] bg-opacity-20 shadow-lg">
@@ -40,22 +40,22 @@ const CardNight = (props) => {
                                     {weather.desc || '-'}</p>
                             </div>
                             <div className="flex justify-between gap-2 w-4/5 mt-6 mb-10 cursor-pointer">
-                                <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#172033]'>
+                                <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-4 pb-2 bg-[#172033]'>
                                     <img src={weather?.icon?.day2 || clear_icon} alt="weather" className='w-[50px]' />
                                     <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day2 || "-"}</p>
                                     <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#F9FAFB] to-[#F9FAFB00] bg-clip-text text-transparent'>{weather.tempDay2 || '0'}°</div>
                                 </div>
-                                <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#172033]'>
+                                <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-4 pb-2 bg-[#172033]'>
                                     <img src={weather?.icon?.day3 || clear_icon} alt="weather" className='w-[50px]' />
                                     <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day3 || "-"}</p>
                                     <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#F9FAFB] to-[#F9FAFB00] bg-clip-text text-transparent'>{weather.tempDay3 || '0'}°</div>
                                 </div>
-                                <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#172033]'>
+                                <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-4 pb-2 bg-[#172033]'>
                                     <img src={weather?.icon?.day4 || clear_icon} alt="weather" className='w-[50px]' />
                                     <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day4 || "-"}</p>
                                     <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#F9FAFB] to-[#F9FAFB00] bg-clip-text text-transparent'>{weather.tempDay4 || '0'}°</div>
                                 </div>
-                                <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#172033]'>
+                                <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-4 pb-2 bg-[#172033]'>
                                     <img src={weather?.icon?.day5 || clear_icon} alt="weather" className='w-[50px]' />
                                     <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day5 || "-"}</p>
                                     <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#F9FAFB] to-[#F9FAFB00] bg-clip-text text-transparent'>{weather.tempDay5 || '0'}°</div>
