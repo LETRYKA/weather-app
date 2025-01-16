@@ -82,6 +82,32 @@ function App() {
     return date.toLocaleDateString('en-US', options);
   };
 
+  const fetchData = async () => {
+    setIsLoading(true)
+    await fetch("https://countriesnow.space/api/v0.1/countries")
+      .then((response) => response.json())
+      .then((result) => {
+        setErrorMessage('')
+        const countriesAndCities = cityfilter(result.data);
+        setCities(countriesAndCities)
+        setFilteredData(result.data)
+        setIsLoading(false)
+      })
+      .catch((error) => {
+        console.log(error)
+        setIsLoading(false)
+        setErrorMessage('There is an error while fetching countries data')
+      })
+  }
+
+  const dataFilter = () => {
+    setFilteredData(
+      cities.filter((data) =>
+        data.city.toLowerCase().startsWith(countrySearch.toLowerCase())
+      ).slice(0, 5)
+    )
+  }
+
   const fetchWeather = async (city) => {
     setErrorMessage('')
     await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&cnt=40&appid=${apiKey}`)
@@ -243,8 +269,6 @@ function App() {
     }
   };
 
-  console.log(`bg-[${aqiInfo.color}]`)
-
   const cityAdd = (city) => {
     if (city.includes(" ")) {
       city = city.replace(/ /g, "%20");
@@ -260,34 +284,7 @@ function App() {
     fetchAqi(city)
   }, [city])
 
-  const fetchData = async () => {
-    setIsLoading(true)
-    await fetch("https://countriesnow.space/api/v0.1/countries")
-      .then((response) => response.json())
-      .then((result) => {
-        setErrorMessage('')
-        const countriesAndCities = cityfilter(result.data);
-        setCities(countriesAndCities)
-        setFilteredData(result.data)
-        setIsLoading(false)
-      })
-      .catch((error) => {
-        console.log(error)
-        setIsLoading(false)
-        setErrorMessage('There is an error while fetching countries data')
-      })
-  }
-
-  const dataFilter = () => {
-    setFilteredData(
-      cities.filter((data) =>
-        data.city.toLowerCase().startsWith(countrySearch.toLowerCase())
-      ).slice(0, 5)
-    )
-  }
-
   useEffect(() => {
-    console.log("Use effect")
     fetchData()
   }, [])
 
@@ -296,8 +293,6 @@ function App() {
   }, [countrySearch])
 
   const shouldDisplayError = errorMessage.length > 0
-
-  console.log(aqiInfo.color)
 
   return (
     <div className="main-container relative overflow-hidden">
