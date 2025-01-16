@@ -1,13 +1,16 @@
 import './App.css';
 import React from 'react';
 import logo from './imgs/logo.png';
-import moment from 'moment';
+import Card from './components/Card';
+import CardNight from './components/CardNight'
+
 import UseAnimations from "react-useanimations";
-import loading2 from 'react-useanimations/lib/loading2';
+import activity from 'react-useanimations/lib/activity';
 
 // Forecast img imports
 import sun from './imgs/sun.webp'
 import sunShadow from './imgs/shadow.png'
+import moonShadow from './imgs/moonshadow.png'
 import cloud from './imgs/Clouds.png'
 import wind from './imgs/Wind.png'
 import rain from './imgs/Rain.png'
@@ -42,13 +45,15 @@ function App() {
   const [cities, setCities] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isCardLoading, setCardIsLoading] = useState(true);
+  const [isCardLoading, setCardIsLoading] = useState(false);
   const [city, setCity] = useState('Ulaanbaatar');
   const [weather, setWeather] = useState({});
   const [weatherIcon, setWeatherIcon] = useState();
   const [weatherIconNight, setWeatherIconNight] = useState();
+  const [aqi, setAqi] = useState({});
+  const [aqiInfo, setAqiInfo] = useState("");
 
-  const apiKey = process.env.REACT_APP_WEATHER_API_KEY;
+  const apiKey = '7a84f98ac9416e88fbb1c66f9eda70e3';
 
   const handleSearch = (event) => {
     setCountrySearch(event.target.value)
@@ -85,21 +90,22 @@ function App() {
         console.log(result);
         setWeather({
           location: result.city.name,
-          temp: Math.floor(result.list[0].main.temp_min),
+          tempDay: Math.floor(result.list[0].main.temp_max),
+          tempNight: Math.floor(result.list[0].main.temp_min),
           desc: result.list[0].weather[0].description,
           icon: {
-            day2: allIcons[result.list[5].weather[0].icon],
+            day2: allIcons[result.list[10].weather[0].icon],
             day3: allIcons[result.list[15].weather[0].icon],
             day4: allIcons[result.list[23].weather[0].icon],
             day5: allIcons[result.list[31].weather[0].icon]
           },
           date: {
-            day2: dayFormatter(result.list[5].dt_txt),
+            day2: dayFormatter(result.list[10].dt_txt),
             day3: dayFormatter(result.list[15].dt_txt),
             day4: dayFormatter(result.list[23].dt_txt),
             day5: dayFormatter(result.list[31].dt_txt),
           },
-          tempDay2: Math.floor(result.list[5].main.temp),
+          tempDay2: Math.floor(result.list[10].main.temp),
           tempDay3: Math.floor(result.list[15].main.temp),
           tempDay4: Math.floor(result.list[23].main.temp),
           tempDay5: Math.floor(result.list[31].main.temp),
@@ -124,6 +130,10 @@ function App() {
         setWeatherIcon(cloud);
         setWeatherIconNight(nCloud);
       }
+      if (weatherDescription === "overcast clouds") {
+        setWeatherIcon(cloud);
+        setWeatherIconNight(nCloud);
+      }
       if (weatherDescription === "scattered clouds") {
         setWeatherIcon(cloud);
         setWeatherIconNight(nCloud);
@@ -134,7 +144,7 @@ function App() {
       }
       if (weatherDescription === "shower rain") {
         setWeatherIcon(rain);
-        setWeatherIconNight();
+        setWeatherIconNight(nRain);
       }
       if (weatherDescription === "rain") {
         setWeatherIcon(rain);
@@ -148,6 +158,10 @@ function App() {
         setWeatherIcon(snow);
         setWeatherIconNight(nSnow);
       }
+      if (weatherDescription === "light snow") {
+        setWeatherIcon(snow);
+        setWeatherIconNight(nSnow);
+      }
       if (weatherDescription === "mist") {
         setWeatherIcon(wind);
         setWeatherIconNight(nWind);
@@ -156,6 +170,80 @@ function App() {
       console.log('Error');
     }
   }
+
+  const fetchAqi = async (city) => {
+    setIsLoading(true)
+    await fetch(`https://api.weatherapi.com/v1/forecast.json?key=2b4269596359410ea18150926251501&q=${city}&days=1&aqi=yes&alerts=no`)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result)
+        const aqi = {
+          airQuality: Math.floor(result.current.air_quality.pm2_5),
+        }
+        setAqi(aqi)
+        aqiHandler(aqi)
+        setIsLoading(false)
+      })
+      .catch((error) => {
+        setIsLoading(false)
+        console.log(error)
+        setErrorMessage('There is an error while fetching countries data')
+      })
+  }
+
+  const aqiHandler = (aqi) => {
+    const airQuality = aqi.airQuality
+    if (0 < airQuality && airQuality < 50) {
+      const aqiObj = {
+        desc: 'Good',
+        color: '#38bdf8',
+        emoji: "😄"
+      }
+      setAqiInfo(aqiObj)
+    }
+    if (51 < airQuality && airQuality < 100) {
+      const aqiObj = {
+        desc: 'Moderate',
+        color: '#7bda72',
+        emoji: "😌"
+      }
+      setAqiInfo(aqiObj)
+    }
+    if (101 < airQuality && airQuality < 150) {
+      const aqiObj = {
+        desc: 'Unhealthy for Sensetive Groups',
+        color: '#f0c42d',
+        emoji: "☹️"
+      }
+      setAqiInfo(aqiObj)
+    }
+    if (151 < airQuality && airQuality < 200) {
+      const aqiObj = {
+        desc: 'Unhealthy',
+        color: '#fe5051',
+        emoji: "😶‍🌫️"
+      }
+      setAqiInfo(aqiObj)
+    }
+    if (201 < airQuality && airQuality < 300) {
+      const aqiObj = {
+        desc: 'Very Unhealthy',
+        color: '#960232',
+        emoji: "😮‍💨"
+      }
+      setAqiInfo(aqiObj)
+    }
+    if (301 < airQuality && airQuality < 999) {
+      const aqiObj = {
+        desc: 'Hazardous',
+        color: '#512771',
+        emoji: "💀"
+      }
+      setAqiInfo(aqiObj)
+    }
+  };
+
+  console.log(`bg-[${aqiInfo.color}]`)
 
   const cityAdd = (city) => {
     if (city.includes(" ")) {
@@ -169,6 +257,7 @@ function App() {
     if (city.length > 0) {
       fetchWeather(city)
     }
+    fetchAqi(city)
   }, [city])
 
   const fetchData = async () => {
@@ -208,6 +297,8 @@ function App() {
 
   const shouldDisplayError = errorMessage.length > 0
 
+  console.log(aqiInfo.color)
+
   return (
     <div className="main-container relative overflow-hidden">
       <div className="absolute w-screen h-screen flex justify-center items-center">
@@ -223,6 +314,23 @@ function App() {
         <div className="w-[1340px] h-[1340px] border border-[#FFFFFF] border-opacity-10 rounded-[50%] absolute"></div>
         <div className="w-[1740px] h-[1740px] border border-[#FFFFFF] border-opacity-10 rounded-[50%] absolute"></div>
       </div>
+
+      {/* AQI WIDGET */}
+      <div className='fixed bottom-10 left-12 bg-[white] py-[10px] px-[20px] rounded-tl-[12px] rounded-tr-[12px] flex justify-center z-50 cursor-pointer shadow-sm'>
+        <div className='flex flex-row gap-10 justify-between items-center mb-[5px]'>
+          <div className='flex flex-row items-center'>
+            <h1 className='text-[40px]'>{aqiInfo.emoji}</h1>
+            <div className='flex-row ml-3'>
+              <p className='text-[24px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{aqi.airQuality || "-"}</p>
+              <p className='text-[14px] text-[#9CA3AF] -mt-[7px]'>{aqiInfo.desc}</p>
+            </div>
+          </div>
+          <div><UseAnimations animation={activity} size={30} fillColor='black' strokeColor='black' /></div>
+        </div>
+        <div className={`w-full absolute bottom-0 h-[6px] border`} style={{ backgroundColor: aqiInfo.color }}></div>
+      </div>
+      {/* END */}
+
       {shouldDisplayError && <div>{errorMessage}</div>}
       {/* Main Container */}
       <div className="weather-container flex content-between">
@@ -234,7 +342,7 @@ function App() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none"><g opacity="0.2"><path d="M31.51 28.51H29.93L29.37 27.97C31.33 25.69 32.51 22.73 32.51 19.51C32.51 12.33 26.69 6.51001 19.51 6.51001C12.33 6.51001 6.51001 12.33 6.51001 19.51C6.51001 26.69 12.33 32.51 19.51 32.51C22.73 32.51 25.69 31.33 27.97 29.37L28.51 29.93V31.51L38.51 41.49L41.49 38.51L31.51 28.51ZM19.51 28.51C14.53 28.51 10.51 24.49 10.51 19.51C10.51 14.53 14.53 10.51 19.51 10.51C24.49 10.51 28.51 14.53 28.51 19.51C28.51 24.49 24.49 28.51 19.51 28.51Z" fill="black" /></g>
                 </svg>
               </div>
-              <input type="search" id="search" name="search" placeholder={isLoading ? "Loading" : "Search"} onChange={handleSearch} className="h-[44px] w-full text-3xl font-bold outline-none"></input>
+              <input type="search" id="search" name="search" placeholder={isLoading ? "Loading" : "Search"} value={countrySearch} onChange={handleSearch} className="h-[44px] w-full text-3xl font-bold outline-none"></input>
             </div>
             {countrySearch &&
               <div className='mt-[10px] pt-4 pb-4 bg-[#ffffff33] backdrop-blur-2xl shadow-lg rounded-[24px]'>
@@ -252,59 +360,11 @@ function App() {
         {/* SB END */}
         {/* Left Side Container */}
         <div className="w-full h-screen flex justify-center items-center bg-[#F3F4F6]">
-          {isLoading && (<UseAnimations animation={loading2} size={40} fillColor='#0F141E' strokeColor='#0F141E' />)}
-          {!isLoading && (
-            <div className="flex relative justify-center items-center">
-              {/* Card */}
-              <div className="w-[414px] h-[832px] flex flex-col items-center rounded-[42px] z-10 bg-white/20 backdrop-blur-[10px] bg-opacity-20 shadow-lg">
-                {/* Card Header f */}
-                <div className="w-4/5 flex items-center flex-col mt-12">
-                  <div className="flex w-full justify-between">
-                    <div>
-                      <p className="text-lg text-[#9CA3AF]">{moment().format('MMMM Do YYYY')}</p>
-                      <h1 className="text-5xl text-[#111827] font-extrabold">{weather.location || 'Undefined'}</h1>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-gray-600"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                  </div>
-                  <img src={weatherIcon || sun} alt="" className="relative w-[274px] h-[274px] mt-10 z-10" />
-                  <img src={sunShadow} alt="sun" className="absolute mt-32 w-[274px] h-[274px] z-0" />
-                </div>
-                {/* Car Footer */}
-                <div className='flex text-start flex-col -mt-[20px] w-4/5'>
-                  <h1 className='text-[144px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.temp || '0'}°</h1>
-                  <p className='text-2xl font-extrabold text-[#FF8E27] -mt-6'>
-                    {weather.desc || 'Error'}</p>
-                </div>
-                <div className="flex justify-between gap-2 w-4/5 mt-6 cursor-pointer">
-                  <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#F0F0F0]'>
-                    <img src={weather?.icon?.day2} alt="weather" className='w-[50px]' />
-                    <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day2}</p>
-                    <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.tempDay2 || '0'}°</div>
-                  </div>
-                  <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#F0F0F0]'>
-                    <img src={weather?.icon?.day3} alt="weather" className='w-[50px]' />
-                    <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day3}</p>
-                    <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.tempDay3 || '0'}°</div>
-                  </div>
-                  <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#F0F0F0]'>
-                    <img src={weather?.icon?.day4} alt="weather" className='w-[50px]' />
-                    <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day4}</p>
-                    <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.tempDay4 || '0'}°</div>
-                  </div>
-                  <div className='flex justify-center items-center flex-col w-full rounded-[12px] pt-1 pb-2 bg-[#F0F0F0]'>
-                    <img src={weather?.icon?.day5} alt="weather" className='w-[50px]' />
-                    <p className='text-[14px] font-semibold text-[#6B7280] mt-2'>{weather?.date?.day5}</p>
-                    <div className='text-[23px] font-extrabold bg-gradient-to-b from-[#111827] to-[#6B7280] bg-clip-text text-transparent'>{weather.tempDay5 || '0'}°</div>
-                  </div>
-                </div>
-              </div>
-              <div className='absolute w-[160px] h-[160px] rounded-full bg-gradient-to-r from-[#ff9429] via-[#feac31] to-[#ff9429] -ml-[400px] -mt-[60px] top-0 z-0'></div>
-            </div>
-          )}
+          <Card isCardLoading={isCardLoading} weather={weather} weatherIcon={weatherIcon} sun={sun} sunShadow={sunShadow} iconHandler={iconHandler} />
         </div>
-
         {/* Right Container */}
-        <div className="w-full h-screen bg-[#0F141E]">
+        <div className="w-full h-screen flex justify-center items-center bg-[#0F141E]">
+          <CardNight isCardLoading={isCardLoading} weather={weather} weatherIcon={weatherIcon} sun={moon} sunShadow={moonShadow} iconHandler={iconHandler} weatherIconNight={weatherIconNight} />
         </div>
       </div>
     </div >
