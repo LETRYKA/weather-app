@@ -4,8 +4,10 @@ import logo from './imgs/logo.png';
 import Card from './components/Card';               // Component Card Day
 import CardNight from './components/CardNight'      // Component Card Night
 
+// UseAnimation Import
 import UseAnimations from "react-useanimations";
 import activity from 'react-useanimations/lib/activity';
+import alertCircle from 'react-useanimations/lib/alertCircle';
 
 // Forecast img imports
 import sun from './imgs/sun.webp'
@@ -50,6 +52,7 @@ function App() {
   const [aqiInfo, setAqiInfo] = useState("");                 // Aqi additional info
   const [cities, setCities] = useState([]);                   // City
   const [aqi, setAqi] = useState({});                         // Aqi data
+  const [searchStatus, setSearchStatus] = useState(false)
 
   const apiKey = '7a84f98ac9416e88fbb1c66f9eda70e3';
 
@@ -84,22 +87,29 @@ function App() {
 
   // Fetching Country Data
   const fetchData = async () => {
-    setIsLoading(true)
-    await fetch("https://countriesnow.space/api/v0.1/countries")
-      .then((response) => response.json())
-      .then((result) => {
-        setErrorMessage('')
-        const countriesAndCities = cityfilter(result.data);
-        console.log(countriesAndCities)
-        setCities(countriesAndCities)
-        setFilteredData(result.data)
-      })
-      .catch((error) => {
-        console.log(error)
-        setIsLoading(false)
-        setErrorMessage('There is an error while fetching countries data')
-      })
-  }
+    try {
+      setIsLoading(true);
+      const response = await fetch("https://countriesnow.space/api/v0.1/countries");
+      const result = await response.json();
+      setErrorMessage('');
+      const countriesAndCities = cityfilter(result.data);
+      setCities(countriesAndCities);
+      setFilteredData(result.data);
+      searchEmpty(filteredData);
+    } catch (error) {
+      console.log(error);
+      setErrorMessage('There is an error while fetching countries data');
+    } finally {
+    }
+  };
+
+  const searchEmpty = (filteredData) => {
+    if (filteredData.length === 0) {
+      setSearchStatus(true)
+    } else {
+      setSearchStatus(false)
+    }
+  };
 
   // Filtering Country Data
   const dataFilter = () => {
@@ -112,43 +122,46 @@ function App() {
 
   // Fetching Weather Data
   const fetchWeather = async (city) => {
-    setIsLoading(true)
-    setErrorMessage('')
-    await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&cnt=40&appid=${apiKey}`)
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-        setWeather({
-          location: result.city.name,
-          tempDay: Math.floor(result.list[0].main.temp_max),
-          tempNight: Math.floor(result.list[0].main.temp_min),
-          desc: result.list[0].weather[0].description,
-          icon: {
-            day2: allIcons[result.list[10].weather[0].icon],
-            day3: allIcons[result.list[15].weather[0].icon],
-            day4: allIcons[result.list[23].weather[0].icon],
-            day5: allIcons[result.list[31].weather[0].icon]
-          },
-          date: {
-            day2: dayFormatter(result.list[10].dt_txt),
-            day3: dayFormatter(result.list[15].dt_txt),
-            day4: dayFormatter(result.list[23].dt_txt),
-            day5: dayFormatter(result.list[31].dt_txt),
-          },
-          tempDay2: Math.floor(result.list[10].main.temp),
-          tempDay3: Math.floor(result.list[15].main.temp),
-          tempDay4: Math.floor(result.list[23].main.temp),
-          tempDay5: Math.floor(result.list[31].main.temp),
-        });
-        iconHandler(result);
-        setIsLoading(false)
-      })
-      .catch((error) => {
-        setIsLoading(false)
-        console.log(error)
-        setErrorMessage('There is an error while fetching weather data')
-      })
-  }
+    try {
+      setIsLoading(true);
+      setErrorMessage('');
+
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&cnt=40&appid=${apiKey}`
+      );
+      const result = await response.json();
+
+      console.log(result);
+      setWeather({
+        location: result.city.name,
+        tempDay: Math.floor(result.list[0].main.temp_max),
+        tempNight: Math.floor(result.list[0].main.temp_min),
+        desc: result.list[0].weather[0].description,
+        icon: {
+          day2: allIcons[result.list[10].weather[0].icon],
+          day3: allIcons[result.list[15].weather[0].icon],
+          day4: allIcons[result.list[23].weather[0].icon],
+          day5: allIcons[result.list[31].weather[0].icon],
+        },
+        date: {
+          day2: dayFormatter(result.list[10].dt_txt),
+          day3: dayFormatter(result.list[15].dt_txt),
+          day4: dayFormatter(result.list[23].dt_txt),
+          day5: dayFormatter(result.list[31].dt_txt),
+        },
+        tempDay2: Math.floor(result.list[10].main.temp),
+        tempDay3: Math.floor(result.list[15].main.temp),
+        tempDay4: Math.floor(result.list[23].main.temp),
+        tempDay5: Math.floor(result.list[31].main.temp),
+      });
+      iconHandler(result);
+    } catch (error) {
+      console.log(error);
+      setErrorMessage('There is an error while fetching weather data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Show icons equal to weather status
   const iconHandler = (result) => {
@@ -206,21 +219,24 @@ function App() {
 
   // Fetch Aqi status
   const fetchAqi = async (city) => {
-    await fetch(`https://api.weatherapi.com/v1/forecast.json?key=2b4269596359410ea18150926251501&q=${city}&days=1&aqi=yes&alerts=no`)
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result)
-        const aqi = {
-          airQuality: Math.floor(result.current.air_quality.pm2_5),
-        }
-        setAqi(aqi)
-        aqiHandler(aqi)
-      })
-      .catch((error) => {
-        console.log(error)
-        setErrorMessage('There is an error while fetching countries data')
-      })
-  }
+    try {
+      const response = await fetch(
+        `https://api.weatherapi.com/v1/forecast.json?key=2b4269596359410ea18150926251501&q=${city}&days=1&aqi=yes&alerts=no`
+      );
+      const result = await response.json();
+
+      console.log(result);
+      const aqi = {
+        airQuality: Math.floor(result.current.air_quality.pm2_5),
+      };
+      setAqi(aqi);
+      aqiHandler(aqi);
+    } catch (error) {
+      console.log(error);
+      setErrorMessage('There is an error while fetching AQI data');
+    }
+  };
+
 
   // Aqi Handler
   const aqiHandler = (aqi) => {
@@ -298,6 +314,7 @@ function App() {
 
   useEffect(() => {
     dataFilter()
+    searchEmpty(filteredData);
   }, [countrySearch])
 
   const shouldDisplayError = errorMessage.length > 0
@@ -356,6 +373,12 @@ function App() {
                       <p className='text-2xl font-bold transition-all hover:pl-[5px]' onClick={() => cityAdd(country.city)} key={index}>{country.city}, {country.country}</p>
                     </div>
                   })}
+                {searchStatus && (
+                  <div className='w-full flex justify-center items-center'>
+                    <UseAnimations animation={alertCircle} size={30} fillColor='#111827' strokeColor='#111827' />
+                    <p className='text-[14px] font-bold text-[#111827] ml-[3px]'>There is no country with that name</p>
+                  </div>
+                )}
                 {cities < 0 && <div>This is isLoading ...</div>}
               </div>}
           </div>
