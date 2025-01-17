@@ -383,7 +383,7 @@ function App() {
                 {searchStatus && (
                   <div className='w-full flex justify-center items-center'>
                     <UseAnimations animation={alertCircle} size={30} fillColor='#111827' strokeColor='#111827' />
-                    <p className='text-[14px] font-bold text-[#111827] ml-[3px]'>There is no country with that name</p>
+                    <p className='text-[14px] font-medium text-[#111827] ml-[3px]'>Your search did not match any documents.</p>
                   </div>
                 )}
                 {cities < 0 && <div>This is isLoading ...</div>}
