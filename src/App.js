@@ -324,7 +324,7 @@ function App() {
 
   return (
     <div className="main-container relative overflow-hidden">
-      <div className='blocker absolute w-screen h-screen bg-black z-50 flex hidden flex-row justify-center items-center'>
+      <div className='blocker absolute w-screen h-screen bg-black z-50 hidden flex-row justify-center items-center'>
         <UseAnimations animation={alertCircle} size={30} fillColor='red' strokeColor='red' />
         <p className='text-[15px] font-medium text-[white] ml-[3px]'>Currently this page does not support mobile devices</p>
       </div>
