@@ -15,3 +15,10 @@ input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration {
     display: none;
 }
+
+
+@media (max-width: 880px) {
+    .blocker {
+        display: flex;
+    }
+}

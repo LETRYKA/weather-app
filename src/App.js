@@ -314,13 +314,20 @@ function App() {
 
   useEffect(() => {
     dataFilter()
-    searchEmpty(filteredData);
   }, [countrySearch])
+
+  useEffect(() => {
+    searchEmpty(filteredData);
+  }, [filteredData])
 
   const shouldDisplayError = errorMessage.length > 0
 
   return (
     <div className="main-container relative overflow-hidden">
+      <div className='blocker absolute w-screen h-screen bg-black z-50 flex hidden flex-row justify-center items-center'>
+        <UseAnimations animation={alertCircle} size={30} fillColor='red' strokeColor='red' />
+        <p className='text-[15px] font-medium text-[white] ml-[3px]'>Currently this page does not support mobile devices</p>
+      </div>
       <div className="absolute w-screen h-screen flex justify-center items-center">
         <div className='flex flex-col justify-center items-end gap-[92px] pl-[90px] relative'>
           <div className='w-[90px] h-[70px] bg-[#0F141E] ml-[0px] mb-[0px] rounded-bl-[100%] z-30'></div>
@@ -336,7 +343,7 @@ function App() {
       </div>
 
       {/* AQI WIDGET */}
-      <div className='fixed bottom-10 left-12 bg-[white] py-[10px] px-[20px] rounded-tl-[12px] rounded-tr-[12px] flex justify-center z-50 cursor-pointer shadow-sm'>
+      <div className='fixed bottom-10 left-12 bg-[white] py-[10px] px-[20px] rounded-tl-[12px] rounded-tr-[12px] flex justify-center z-40 cursor-pointer shadow-sm'>
         <div className='flex flex-row gap-10 justify-between items-center mb-[5px]'>
           <div className='flex flex-row items-center'>
             <h1 className='text-[40px]'>{aqiInfo.emoji}</h1>
@@ -355,7 +362,7 @@ function App() {
       {/* Main Container */}
       <div className="weather-container flex content-between">
         {/* Search Bar */}
-        <div className='absolute w-screen z-50  flex justify-center mt-[40px]'>
+        <div className='absolute w-screen z-40  flex justify-center mt-[40px]'>
           <div>
             <div className="w-[567px] h-auto bg-white flex row gap-4 justify-center items-center p-4 rounded-[48px]">
               <div className="w-12 h-12">
